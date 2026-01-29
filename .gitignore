@@ -1,0 +1,33 @@
+# Build outputs
+*.exe
+*.out
+a.out
+a.exe
+main
+main.exe
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+
+# IDE / Editor
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build directories
+build/
+out/
+cmake-build-*/
