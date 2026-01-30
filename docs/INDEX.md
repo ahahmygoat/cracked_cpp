@@ -19,8 +19,8 @@ This folder is your **single entry point** for all written docs. We teach **synt
 
 ## Project layout (current codebase)
 
-- **src/** — All C++ source (main.cpp, refactorMain.cpp, MerkelMain, OrderBookEntry, CSVReader). Build from repo root with **-Isrc**.
-- **scripts/** — Build scripts: `build-main.ps1`, `build-OrderBookEntry.ps1`, `build-MerkelMain.ps1`. Run from repo root (e.g. `.\scripts\build-MerkelMain.ps1`).
+- **src/** — All C++ source (main.cpp, refactorMain.cpp, MerkelMain, OrderBook, OrderBookEntry, CSVReader). Build from repo root with **-Isrc**.
+- **scripts/** — Build scripts: `build-MerkelMain.ps1` (output build/MerkelMain.exe), `run-main.ps1`, `build-OrderBookEntry.ps1`. Run from repo root: `.\run.ps1` or `.\scripts\build-MerkelMain.ps1`.
 - **data/** — CSV data (e.g. order_book_example.csv). Paths in code are relative to current working directory (run from repo root).
 - **docs/** — This folder. Start with [INDEX.md](INDEX.md); full layout: [project-layout.md](project-layout.md).
 
@@ -35,7 +35,7 @@ Use this to jump to a theme instead of reading in order.
 | **Getting started** | [SETUP.md](SETUP.md) (run, build, compilers), [project-layout.md](project-layout.md) (src/, scripts/, how to build each target), [windows-gcc-setup.md](windows-gcc-setup.md) (Windows: g++ not found). |
 | **C++ syntax & concepts** | [cpp-basics.md](cpp-basics.md) (functions, variables, control flow), [cpp-classes.md](cpp-classes.md) (class vs object), [ClassesandData.md](ClassesandData.md) (types, struct/class, vectors, error handling), [simple-classes-and-vectors.md](simple-classes-and-vectors.md) (Vec3D, vector of objects), [vector-iteration.md](vector-iteration.md) (index, iterator, range-for; value vs ref vs const ref), [constructors-and-initialization.md](constructors-and-initialization.md) (default, parameterized, copy, move, = default, = delete), [tokenizer.md](tokenizer.md) (split by delimiter; CSVReader), [exception-handling.md](exception-handling.md) (try/catch, file open, stod). |
 | **OOP & design** | [oop-concepts.md](oop-concepts.md) (encapsulation, inheritance, polymorphism, **static members**), [organizing-code.md](organizing-code.md) (header = spec, limiting exposure, embedding init), [headers-and-cpp.md](headers-and-cpp.md) (.h/.cpp split, include guards, extern), [DESIGN.md](DESIGN.md) (single responsibility, data vs behavior, when to refactor, PM lens). |
-| **Domain & worksheet** | [ORDERBOOK.md](ORDERBOOK.md) (order book, bids/asks, CSV format), [orderbook-matching.md](orderbook-matching.md) (how matching works, using the data), [orderbook-worksheet.md](orderbook-worksheet.md) (teaching steps tied to OrderBookEntry), [merkel-main.md](merkel-main.md) (MerkelMain app, init/run, build). |
+| **Domain & worksheet** | [ORDERBOOK.md](ORDERBOOK.md) (order book, bids/asks, CSV format), [orderbook-matching.md](orderbook-matching.md) (how matching works), [orderbook-time.md](orderbook-time.md) (timestamps, current time step, stepping), [orderbook-statistics.md](orderbook-statistics.md) (why stats matter, mean/change vs prev, verify with test data), [trading-market-basics.md](trading-market-basics.md) (bid/ask, best bid/ask, spread), [orderbook-worksheet.md](orderbook-worksheet.md) (teaching steps tied to OrderBookEntry), [merkel-main.md](merkel-main.md) (MerkelMain app, OrderBook, current time, build/run). |
 | **Reference** | [git-github-cheatsheet.md](git-github-cheatsheet.md) (clone, commit, push, branches). |
 
 ---
@@ -73,13 +73,16 @@ Alphabetical by filename. For grouped by category, see **Docs by category** abov
 | **exception-handling.md** | Try/catch, when to use exceptions vs checks; file open (is_open), std::stod; tie to CSVReader.cpp (src/) and refactorMain.cpp (src/). |
 | **headers-and-cpp.md** | Header files and .h/.cpp pattern: declarations vs definitions, include guards, extern. OrderBookEntry, MerkelMain, CSVReader (all in src/). |
 | **INDEX.md** (this file) | How to use the docs; noob vs principal vs PM paths; docs by category; learning path; doc map. |
-| **merkel-main.md** | MerkelMain: exchange app class (init, run, menu loop), OrderBookEntry integration, encapsulation, build with OrderBookEntry.cpp + CSVReader.cpp. |
+| **merkel-main.md** | MerkelMain: exchange app (init, run, OrderBook, current time step), stats for current time window, build/run (build/MerkelMain.exe). |
 | **oop-concepts.md** | Software engineering: encapsulation, inheritance, polymorphism, **static members and utility-style design**. Tied to OrderBookEntry, MerkelMain, CSVReader. |
 | **orderbook-matching.md** | How order book matching works (bids vs asks, bid ≥ ask); using the CSV data and OrderBook / getOrders / matchOrders. |
+| **orderbook-statistics.md** | Why statistics matter for trading (mean, change vs prev); learning goals (write stats functions, verify with test data). |
+| **orderbook-time.md** | Timestamps, earliest/latest/next/previous, current time step, stats for current time window. |
 | **orderbook-worksheet.md** | Teaching steps from 2313_v3.pdf: class definition, constructor, vector of objects, range-for, const ref, challenge (computeAveragePrice etc.). Ties worksheet to OrderBookEntry.h and OrderBookEntry.cpp. |
 | **organizing-code.md** | Organizing code: header = spec, .cpp = impl, namespacing, include guards, limiting exposure (private orders_), embedding init. Tied to MerkelMain. |
 | **ORDERBOOK.md** | Domain: order book, bids/asks, matching engine, CSV format. |
-| **project-layout.md** | Project layout: src/, scripts/, data/, docs/; how to build each target; current C++ codebase as context. |
+| **project-layout.md** | Project layout: src/, scripts/, build/ output, data/, docs/; how to build each target. |
+| **trading-market-basics.md** | Trading/market: bid, ask, best bid/ask, spread; tie to OrderBook and MerkelMain stats. |
 | **SETUP.md** | Run, build, compilers (Win/Mac/Linux), PATH, scripts, Git, troubleshooting. |
 | **simple-classes-and-vectors.md** | Syntax for simple classes (Vec3D) and putting objects into a std::vector (push_back, entries[i]). |
 | **tokenizer.md** | Splitting strings into tokens: std::getline(stream, token, delimiter) pattern; exception handling for tokenize/stringsToOBE; tie to CSVReader.cpp (src/). |

@@ -1,14 +1,15 @@
 /*
  * CSVReader.cpp — definitions for CSV reading (tokenize, stringsToOBE, readCSV).
  *
- * PURPOSE: Implements CSVReader declared in CSVReader.h. Reads CSV lines (timestamp, product,
- * orderType, amount, price), tokenizes by comma (docs/tokenizer.md), parses with try/catch
- * (docs/exception-handling.md).
+ * PURPOSE: Implements CSVReader declared in CSVReader.h. Reads CSV lines, tokenizes by comma,
+ * parses with try/catch; skips bad lines and logs to stderr.
  *
- * PROJECT LAYOUT: Source in src/. Build from repo root with -Isrc. See docs/project-layout.md.
+ * DOCS (embedded references):
+ *   docs/tokenizer.md — tokenize(csvLine, ','); getline(ss, token, delimiter).
+ *   docs/exception-handling.md — stringsToOBE throws; readCSVInto catches std::exception.
  *
- * CSV columns (order in file): timestamp, product, orderType, amount, price.
- * OrderBookEntry constructor: (price, amount, timestamp, product, orderType).
+ * CSV columns (file order): timestamp, product, orderType, amount, price.
+ * OrderBookEntry ctor: (price, amount, timestamp, product, orderType). See CSVReader.h.
  */
 
 #include "CSVReader.h"
@@ -48,7 +49,7 @@ OrderBookEntry CSVReader::stringsToOBE(const std::vector<std::string>& tokens) {
     return OrderBookEntry(price, amount, timestamp, product, orderType);
 }
 
-// -------- readCSVInto: load file into vector (private helper) --------
+// -------- readCSVInto: load file into vector (private; see docs/exception-handling.md) --------
 // File open: check is_open(), return 0 on failure. Per line: tokenize (no throw), then try stringsToOBE;
 // catch std::exception and skip line (log to stderr). See docs/exception-handling.md.
 int CSVReader::readCSVInto(const std::string& path, std::vector<OrderBookEntry>& out) {
@@ -72,12 +73,14 @@ int CSVReader::readCSVInto(const std::string& path, std::vector<OrderBookEntry>&
     return static_cast<int>(out.size());
 }
 
+/** Public API: return new vector of OrderBookEntry. Empty on open failure or parse errors. */
 std::vector<OrderBookEntry> CSVReader::readCSV(const std::string& filename) {
     std::vector<OrderBookEntry> result;
     readCSVInto(filename, result);
     return result;
 }
 
+/** Public API: fill out (cleared first); returns count loaded. 0 on error. */
 int CSVReader::readCSV(const std::string& filename, std::vector<OrderBookEntry>& out) {
     return readCSVInto(filename, out);
 }

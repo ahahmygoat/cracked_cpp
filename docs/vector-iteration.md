@@ -1,8 +1,8 @@
-# Iterating over a vector: three design patterns
+# Iterating over a vector: three design patterns and memory
 
-This doc explains **three ways to iterate over a `std::vector`** in C++: **index-based**, **iterator-based**, and **range-based for**. We use the same task — "print the first N `OrderBookEntry` objects" — so you can compare. The pattern used in **OrderBookEntry.cpp** (lines 103–111) is the **range-based for** loop.
+This doc explains **three ways to iterate over a `std::vector`** in C++: **index-based**, **iterator-based**, and **range-based for**. It also explains **how iteration affects memory** — when you copy vs when you reference — and why **const reference** is preferred for read-only loops. We use the same task — "print the first N `OrderBookEntry` objects" — so you can compare. The pattern used in **OrderBookEntry.cpp** is the **range-based for** with **const reference**.
 
-**Why three patterns?** Each has a use: index when you need the position; iterator when you need to insert/erase or use algorithms; range-based for when you just need each element. Noob-friendly; we call out tradeoffs.
+**Why three patterns?** Each has a use: index when you need the position; iterator when you need to insert/erase or use algorithms; range-based for when you just need each element. **Why care about memory?** Iterating by value copies every element into the loop variable; with thousands of orders that's a lot of unnecessary copying. Use **const reference** to read the original without copying and to state explicitly that you won't modify it.
 
 ---
 
@@ -148,6 +148,48 @@ void printOrderBook(const std::vector<OrderBookEntry>& entries, int maxRows = 5)
 
 ---
 
+## 4. Memory and iteration: why const reference?
+
+**Context:** In early machines (e.g. magnetic core memory), memory was at a premium — programmers had to be very careful about what they stored and when they copied data. C++ comes from that mindset: it gives you **control over when copies happen**. Today we have plenty of RAM and fast storage, but we also have **large datasets** (order books with thousands of entries, big media files, etc.), so the same idea applies: **don't copy gratuitously** when you're only reading.
+
+**What happens when you iterate by value?**
+
+```cpp
+for (auto s : strings) {       // each loop: COPY of the string into s
+    std::cout << s << std::endl;
+}
+```
+
+Each time through the loop, the compiler **copies** the current element into the loop variable `s`. For a small type that's cheap; for a **string** or an **OrderBookEntry** (several doubles and strings), that's a full copy — allocation, copying characters or members, then destruction at the end of the iteration. With **thousands of orders**, you're doing thousands of copies per pass over the vector.
+
+**What we want for read-only iteration:**
+
+1. **No copy** — use a **reference** (`&`) so the loop variable refers to the **original** element in the vector.
+2. **Read-only** — use **const** so the compiler enforces that we don't modify the element (and so our intent is explicit).
+
+```cpp
+for (const auto& s : strings) {
+    std::cout << s << std::endl;   // no copy; s is the original string
+    // s[0] = 'x';   // ERROR: cannot modify const
+}
+```
+
+So: **const** = "I won't change it"; **reference** = "don't copy it, give me the original." Same behaviour as the copy version, but **efficient** and **explicit**.
+
+**If you need to modify the element**, use a non-const reference:
+
+```cpp
+for (auto& order : orders) {
+    order.price *= 1.01;   // allowed: we're updating the original
+}
+```
+
+If you had promised **const** and then tried to modify, the compiler would reject it — so you're also getting a **compile-time check** on your intent.
+
+**In this repo:** We iterate with **const reference** wherever we only read: **OrderBookEntry.cpp** (printOrderBookByRange, computeAveragePrice, getEarliestTime, etc.) and **OrderBook.cpp** (getOrders, matchOrders, getBestBid, getBestAsk, getAllEntries). With thousands of orders in the book, that avoids thousands of unnecessary copies per loop.
+
+---
+
 ## Quick comparison
 
 | Pattern           | Loop form                          | Access element   | Need index? | Need insert/erase? |
@@ -179,3 +221,4 @@ void printOrderBook(const std::vector<OrderBookEntry>& entries, int maxRows = 5)
 - [ClassesandData.md](ClassesandData.md) — Vectors and data structures.
 - [DESIGN.md](DESIGN.md) — When to use which loop (design).
 - [project-layout.md](project-layout.md) — Where OrderBookEntry.cpp and CSVReader.cpp live (src/).
+- [orderbook-worksheet.md](orderbook-worksheet.md) — Teaching steps that use range-for and const reference over the order book.

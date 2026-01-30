@@ -1,24 +1,25 @@
 /*
  * OrderBookEntry.cpp — definitions for order book entry, print helpers, and stats.
  *
- * PURPOSE: Implements everything declared in OrderBookEntry.h. One translation unit holds
- * the single definition of the global orders vector, OrderBookEntry member functions,
- * printOrderBook*, and compute* functions, plus main() for the demo.
- * CSV loading is in CSVReader (CSVReader.cpp); see CSVReader.h.
+ * PURPOSE: Implements everything declared in OrderBookEntry.h: global orders, OrderBookEntry
+ * members, printOrderBook*, compute* (average/low/high/spread/change/percent), time helpers,
+ * and (when ORDERBOOK_STANDALONE) main() for the demo. CSV loading is in CSVReader; see CSVReader.h.
+ *
+ * DOCS (embedded references):
+ *   docs/vector-iteration.md — const auto& for read-only loops; memory and iteration.
+ *   docs/orderbook-statistics.md — computeAveragePrice, computePriceChange, computePercentChange.
+ *   docs/orderbook-time.md — getEarliestTime, getLatestTime, getNextTime, getPreviousTime.
+ *   docs/orderbook-worksheet.md — Teaching steps; docs/headers-and-cpp.md for .h/.cpp split.
  *
  * PROJECT LAYOUT: Source in src/. Build from repo root with -Isrc. See docs/project-layout.md.
- *
- * WORKSHEET: Follows docs/2313_v3.pdf (Modelling an order book entry as a class).
- * See docs/orderbook-worksheet.md for teaching steps; docs/headers-and-cpp.md for .h/.cpp split;
- * docs/oop-concepts.md for encapsulation, inheritance, polymorphism.
- *
- * CSV columns (order in file): timestamp, product, orderType, amount, price.
+ * CSV columns (file order): timestamp, product, orderType, amount, price.
  * Constructor parameter order: (price, amount, timestamp, product, orderType).
  */
 
 #include "OrderBookEntry.h"
 #include "CSVReader.h"
 #include <algorithm> /* std::min for printOrderBookByIndex */
+#include <set>
 #include <utility>   /* std::move for constructor (efficiency) */
 
 // -------- Global vector: single definition (declared extern in .h) --------
@@ -90,6 +91,58 @@ double computeHighPrice(const std::vector<OrderBookEntry>& entries) {
 
 double computePriceSpread(const std::vector<OrderBookEntry>& entries) {
     return computeHighPrice(entries) - computeLowPrice(entries);
+}
+
+// -------- Change since previous time frame (see docs/orderbook-statistics.md) --------
+double computePriceChange(const std::vector<OrderBookEntry>& current, const std::vector<OrderBookEntry>& previous) {
+    if (previous.empty()) return 0.0;
+    double meanPrev = computeAveragePrice(previous);
+    double meanCurr = computeAveragePrice(current);
+    return meanCurr - meanPrev;
+}
+
+double computePercentChange(const std::vector<OrderBookEntry>& current, const std::vector<OrderBookEntry>& previous) {
+    if (previous.empty()) return 0.0;
+    double meanPrev = computeAveragePrice(previous);
+    if (meanPrev == 0.0) return 0.0;
+    double meanCurr = computeAveragePrice(current);
+    return (meanCurr - meanPrev) / meanPrev * 100.0;
+}
+
+// -------- Time helpers (used by OrderBook and MerkelMain; see docs/orderbook-time.md) --------
+// Scan entries for min/max timestamp; next/prev use set of unique timestamps in sorted order.
+
+std::string getEarliestTime(const std::vector<OrderBookEntry>& entries) {
+    if (entries.empty()) return "";
+    std::string earliest = entries[0].timestamp;
+    for (const auto& e : entries) {
+        if (e.timestamp < earliest) earliest = e.timestamp;
+    }
+    return earliest;
+}
+
+std::string getLatestTime(const std::vector<OrderBookEntry>& entries) {
+    if (entries.empty()) return "";
+    std::string latest = entries[0].timestamp;
+    for (const auto& e : entries) {
+        if (e.timestamp > latest) latest = e.timestamp;
+    }
+    return latest;
+}
+
+std::string getNextTime(const std::string& currentTime, const std::vector<OrderBookEntry>& entries) {
+    std::set<std::string> timestamps;
+    for (const auto& e : entries) timestamps.insert(e.timestamp);
+    auto it = timestamps.upper_bound(currentTime);
+    return (it != timestamps.end()) ? *it : "";
+}
+
+std::string getPreviousTime(const std::string& currentTime, const std::vector<OrderBookEntry>& entries) {
+    std::set<std::string> timestamps;
+    for (const auto& e : entries) timestamps.insert(e.timestamp);
+    auto it = timestamps.lower_bound(currentTime);  // first >= currentTime
+    if (it == timestamps.begin()) return "";
+    return *std::prev(it);
 }
 
 // -------- Entry point for the order book demo (only when building standalone) --------

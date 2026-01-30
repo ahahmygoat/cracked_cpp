@@ -1,17 +1,18 @@
 /*
  * OrderBookEntry.h — declarations for order book entry type, formatting, and helpers.
  *
- * PURPOSE: Header file for the order book demo. Declares types (OrderBookType, OrderBookEntry),
- * formatting helpers (Format::price, Format::sectionHeader), the global orders vector, and
- * free functions (printOrderBook*, compute*). CSV loading is in CSVReader (readCSV); see CSVReader.h.
+ * PURPOSE: Declares types (OrderBookType, OrderBookEntry), Format helpers (price, sectionHeader),
+ * global orders vector, and free functions (printOrderBook*, compute*, time helpers). CSV loading
+ * is in CSVReader (readCSV); see CSVReader.h.
  *
- * PROJECT LAYOUT: Source in src/. Include as "OrderBookEntry.h" when building with -Isrc.
+ * DOCS (embedded references):
+ *   docs/headers-and-cpp.md — Why .h vs .cpp; declarations in header.
+ *   docs/vector-iteration.md — const auto& for read-only loops; memory and iteration.
+ *   docs/orderbook-statistics.md — computeAveragePrice, computePriceChange, computePercentChange.
+ *   docs/orderbook-time.md — getEarliestTime, getNextTime, getPreviousTime (free functions).
  *
- * WHY .h AND .cpp? Declarations go in the header so other .cpp files can #include "OrderBookEntry.h"
- * and use the types/functions without recompiling the implementation. See docs/headers-and-cpp.md.
- *
- * INCLUDE: Use #include "OrderBookEntry.h" in any .cpp that uses OrderBookEntry, printOrderBook, etc.
- * For loading CSV: #include "CSVReader.h" and use CSVReader::readCSV(path) or readCSV(path, out).
+ * PROJECT LAYOUT: Source in src/. Include "OrderBookEntry.h" when building with -Isrc.
+ * For CSV: #include "CSVReader.h"; CSVReader::readCSV(path) or readCSV(path, out).
  */
 
 #ifndef ORDERBOOKENTRY_H
@@ -71,5 +72,16 @@ double computeAveragePrice(const std::vector<OrderBookEntry>& entries);
 double computeLowPrice(const std::vector<OrderBookEntry>& entries);
 double computeHighPrice(const std::vector<OrderBookEntry>& entries);
 double computePriceSpread(const std::vector<OrderBookEntry>& entries);
+
+/** Change since previous time frame: mean(current) - mean(previous). Empty previous → 0.0. */
+double computePriceChange(const std::vector<OrderBookEntry>& current, const std::vector<OrderBookEntry>& previous);
+/** Percent change: (mean(current) - mean(previous)) / mean(previous) * 100. Empty or zero previous → 0.0. */
+double computePercentChange(const std::vector<OrderBookEntry>& current, const std::vector<OrderBookEntry>& previous);
+
+/** Time helpers: earliest/latest timestamp in entries; next/previous in sorted order. Empty string if none. */
+std::string getEarliestTime(const std::vector<OrderBookEntry>& entries);
+std::string getLatestTime(const std::vector<OrderBookEntry>& entries);
+std::string getNextTime(const std::string& currentTime, const std::vector<OrderBookEntry>& entries);
+std::string getPreviousTime(const std::string& currentTime, const std::vector<OrderBookEntry>& entries);
 
 #endif /* ORDERBOOKENTRY_H */

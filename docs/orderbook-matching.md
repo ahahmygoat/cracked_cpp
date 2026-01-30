@@ -2,7 +2,7 @@
 
 This doc explains **how order book matching works** (bids vs asks, when a trade can happen) and **how the data and code in this repo support it**. It ties the CSV data and the `OrderBook` / `OrderBookEntry` types to the matching idea.
 
-**Takeaway:** A **match** happens when a **bid price ≥ ask price** (and the exchange rules say so). The CSV gives us a **snapshot** of the book at a timestamp; we filter by product and timestamp, then a matching engine would compare bids and asks to decide trades. See [ORDERBOOK.md](ORDERBOOK.md) for the big picture; this doc focuses on **matching** and **using the data**.
+**Takeaway:** A **match** happens when a **bid price ≥ ask price** (and the exchange rules say so). The CSV gives us a **snapshot** of the book at a timestamp; we filter by product and timestamp, then a matching engine would compare bids and asks to decide trades. For **time** (earliest/latest/next/previous, current time step, stats for current window), see [orderbook-time.md](orderbook-time.md). See [ORDERBOOK.md](ORDERBOOK.md) for the big picture.
 
 ---
 

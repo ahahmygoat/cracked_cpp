@@ -1,14 +1,15 @@
 /*
  * CSVReader.h — declarations for CSV file reading into OrderBookEntry vectors.
  *
- * PURPOSE: Single place for CSV loading. readCSV tokenizes each line (see docs/tokenizer.md),
- * parses amount/price with try/catch (docs/exception-handling.md), and returns or fills
- * a vector of OrderBookEntry. CSV format: timestamp, product, orderType, amount, price.
+ * PURPOSE: Single place for CSV loading. readCSV tokenizes each line, parses amount/price
+ * with try/catch, and returns or fills a vector of OrderBookEntry.
  *
- * PROJECT LAYOUT: Source in src/. Include as "CSVReader.h" when building with -Isrc.
+ * DOCS (embedded references):
+ *   docs/tokenizer.md — tokenize(csvLine, delimiter); split by comma.
+ *   docs/exception-handling.md — stringsToOBE throws; readCSVInto catches and skips bad lines.
  *
- * USE: Include "CSVReader.h" and "OrderBookEntry.h"; call CSVReader::readCSV(path) or
- * readCSV(path, out). Link CSVReader.cpp. OrderBookEntry no longer provides loadOrderBook.
+ * CSV format (columns): timestamp, product, orderType, amount, price.
+ * PROJECT LAYOUT: Source in src/. Include "CSVReader.h" and "OrderBookEntry.h"; link CSVReader.cpp.
  */
 
 #pragma once

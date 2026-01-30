@@ -2,7 +2,7 @@
 
 This doc describes **how the repo is organized** so you can find source, scripts, data, and docs. It reflects the **current C++ codebase**: `src/` for source, `scripts/` for build scripts, `data/` for CSV, `docs/` for documentation.
 
-**Takeaway:** All C++ source lives in **`src/`**. Build from the **repo root** with **`-Isrc`** so `#include "OrderBookEntry.h"` and similar resolve. Run **`.\run.ps1`** or **`.\scripts\build-main.ps1`** (Windows) or **`./run.sh`** (macOS/Linux) to build and run the default entry point (`main.cpp`). Use **`scripts/build-MerkelMain.ps1`** or **`scripts/build-OrderBookEntry.ps1`** for the other targets.
+**Takeaway:** All C++ source lives in **`src/`**. Build from the **repo root** with **`-Isrc`** so `#include "OrderBookEntry.h"` and similar resolve. **`.\run.ps1`** (Windows) builds and runs **MerkelMain** (output **build/MerkelMain.exe**). Use **`.\scripts\run-main.ps1`** for main.exe, **`.\scripts\build-OrderBookEntry.ps1`** for the OrderBookEntry demo.
 
 ---
 
@@ -14,7 +14,7 @@ This doc describes **how the repo is organized** so you can find source, scripts
 | **scripts/**    | Build scripts (PowerShell). Each script builds one target from repo root with `-Isrc`. |
 | **data/**       | Input data (e.g. `order_book_example.csv`). Paths in code are relative to **current working directory** (run from repo root). |
 | **docs/**       | Documentation (markdown). Learning path, design, setup, C++ concepts. See [INDEX.md](INDEX.md). |
-| **run.ps1**     | Build and run `src/main.cpp` → `main.exe` (Windows). Uses `-Isrc`. |
+| **run.ps1**     | Build and run MerkelMain → **build/MerkelMain.exe** (Windows). Uses `-Isrc`. Run from repo root so data/ is found. |
 | **run.sh**      | Build and run `src/main.cpp` → `main` (macOS/Linux). Uses `-Isrc`. |
 | **README.md**   | Project overview, how to run, learning path, design philosophy. |
 | **SETUP.md**    | Quick setup; points to docs/SETUP.md for full details. |
@@ -27,8 +27,9 @@ This doc describes **how the repo is organized** so you can find source, scripts
 |------|------|
 | **main.cpp** | Simplest entry point: single `main()`, one pass through the menu (no loop). No OrderBookEntry/CSVReader. |
 | **refactorMain.cpp** | Same menu with a **loop**; logic split into functions (printMenu, getUserOption, validateUserOption, handleUserOption) and enum class MenuOption. Includes cin.fail() handling. |
-| **MerkelMain.cpp**, **MerkelMain.h** | Class-based app: `init()` loads CSV via `CSVReader::readCSV(path, orders_)`, `run()` is the menu loop. Private `orders_` (limiting exposure). Defines its own `main()` that creates MerkelMain, calls init(), run(). |
-| **OrderBookEntry.cpp**, **OrderBookEntry.h** | Order book entry type (price, amount, timestamp, product, orderType), Format helpers, global `orders`, printOrderBook*, compute* (average/low/high/spread). Defines its own `main()` for the OrderBookEntry demo (load CSV, print first N, stats). |
+| **MerkelMain.cpp**, **MerkelMain.h** | Class-based app: `init()` loads order book via **OrderBook::load(path)**, sets **currentTimestamp_** to earliest; `run()` is the menu loop. Private **orderBook_** (OrderBook) and **currentTimestamp_**. Option 2 = stats for **current time window**; option 6 = advance to next time. Defines its own `main()`. |
+| **OrderBook.cpp**, **OrderBook.h** | Order book: entries by (product, timestamp). **load()**, **getOrders**, **matchOrders**, **getBestBid**, **getBestAsk**, **getAllEntries**, **getAllEntriesAtTime**, **getEarliestTime**, **getLatestTime**, **getNextTime**, **getPreviousTime**. |
+| **OrderBookEntry.cpp**, **OrderBookEntry.h** | Order book entry type (price, amount, timestamp, product, orderType), Format helpers, global `orders`, printOrderBook*, compute* (average/low/high/spread), time helpers (getEarliestTime, getLatestTime, getNextTime, getPreviousTime over a vector). Defines its own `main()` for the OrderBookEntry demo when built with ORDERBOOK_STANDALONE. |
 | **CSVReader.cpp**, **CSVReader.h** | CSV loading: `readCSV(path)` returns vector, `readCSV(path, out)` fills a vector and returns count. Tokenizes by comma (see [tokenizer.md](tokenizer.md)), try/catch for stod (see [exception-handling.md](exception-handling.md)). |
 
 **Include style:** All `#include "OrderBookEntry.h"`, `#include "CSVReader.h"`, etc. assume headers are found via **`-Isrc`** when compiling from repo root. Do not use `#include "src/OrderBookEntry.h"`.
@@ -43,7 +44,9 @@ Scripts run from **repo root** (they set `$repoRoot = (Split-Path $PSScriptRoot 
 |--------|--------|--------|---------------------------|
 | **scripts/build-main.ps1** | `src/main.cpp` | `main.exe` | `.\scripts\build-main.ps1` |
 | **scripts/build-OrderBookEntry.ps1** | `src/OrderBookEntry.cpp` + `src/CSVReader.cpp` | `OrderBookEntry.exe` | `.\scripts\build-OrderBookEntry.ps1` |
-| **scripts/build-MerkelMain.ps1** | `src/MerkelMain.cpp` + `src/OrderBookEntry.cpp` + `src/CSVReader.cpp` | `MerkelMain.exe` | `.\scripts\build-MerkelMain.ps1` |
+| **scripts/build-MerkelMain.ps1** | `src/MerkelMain.cpp` + `src/OrderBookEntry.cpp` + `src/OrderBook.cpp` + `src/CSVReader.cpp` | **build/MerkelMain.exe** | `.\run.ps1` or `.\scripts\build-MerkelMain.ps1` |
+
+**MerkelMain** outputs to **build/MerkelMain.exe** so the exe in the repo root is not locked; if you see "Permission denied" when linking, close any running MerkelMain.exe and rebuild.
 
 **Manual build examples (from repo root):**
 
@@ -54,8 +57,8 @@ g++ -std=c++17 -Wall -g -Isrc -o main.exe src/main.cpp
 # OrderBookEntry demo
 g++ -std=c++17 -Wall -g -Isrc -o OrderBookEntry.exe src/OrderBookEntry.cpp src/CSVReader.cpp
 
-# MerkelMain (full exchange loop with CSV)
-g++ -std=c++17 -Wall -g -Isrc -o MerkelMain.exe src/MerkelMain.cpp src/OrderBookEntry.cpp src/CSVReader.cpp
+# MerkelMain (full exchange loop with OrderBook, time stepping)
+g++ -std=c++17 -Wall -g -Isrc -o build/MerkelMain.exe src/MerkelMain.cpp src/OrderBookEntry.cpp src/OrderBook.cpp src/CSVReader.cpp
 ```
 
 ---
