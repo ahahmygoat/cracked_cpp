@@ -35,7 +35,7 @@ Use this to jump to a theme instead of reading in order.
 | **Getting started** | [SETUP.md](SETUP.md) (run, build, compilers), [project-layout.md](project-layout.md) (src/, scripts/, how to build each target), [windows-gcc-setup.md](windows-gcc-setup.md) (Windows: g++ not found). |
 | **C++ syntax & concepts** | [cpp-basics.md](cpp-basics.md) (functions, variables, control flow), [cpp-classes.md](cpp-classes.md) (class vs object), [ClassesandData.md](ClassesandData.md) (types, struct/class, vectors, error handling), [simple-classes-and-vectors.md](simple-classes-and-vectors.md) (Vec3D, vector of objects), [vector-iteration.md](vector-iteration.md) (index, iterator, range-for; value vs ref vs const ref), [constructors-and-initialization.md](constructors-and-initialization.md) (default, parameterized, copy, move, = default, = delete), [tokenizer.md](tokenizer.md) (split by delimiter; CSVReader), [exception-handling.md](exception-handling.md) (try/catch, file open, stod). |
 | **OOP & design** | [oop-concepts.md](oop-concepts.md) (encapsulation, inheritance, polymorphism, **static members**), [organizing-code.md](organizing-code.md) (header = spec, limiting exposure, embedding init), [headers-and-cpp.md](headers-and-cpp.md) (.h/.cpp split, include guards, extern), [DESIGN.md](DESIGN.md) (single responsibility, data vs behavior, when to refactor, PM lens). |
-| **Domain & worksheet** | [ORDERBOOK.md](ORDERBOOK.md) (order book, bids/asks, CSV format), [orderbook-worksheet.md](orderbook-worksheet.md) (teaching steps tied to OrderBookEntry), [merkel-main.md](merkel-main.md) (MerkelMain app, init/run, build). |
+| **Domain & worksheet** | [ORDERBOOK.md](ORDERBOOK.md) (order book, bids/asks, CSV format), [orderbook-matching.md](orderbook-matching.md) (how matching works, using the data), [orderbook-worksheet.md](orderbook-worksheet.md) (teaching steps tied to OrderBookEntry), [merkel-main.md](merkel-main.md) (MerkelMain app, init/run, build). |
 | **Reference** | [git-github-cheatsheet.md](git-github-cheatsheet.md) (clone, commit, push, branches). |
 
 ---
@@ -75,6 +75,7 @@ Alphabetical by filename. For grouped by category, see **Docs by category** abov
 | **INDEX.md** (this file) | How to use the docs; noob vs principal vs PM paths; docs by category; learning path; doc map. |
 | **merkel-main.md** | MerkelMain: exchange app class (init, run, menu loop), OrderBookEntry integration, encapsulation, build with OrderBookEntry.cpp + CSVReader.cpp. |
 | **oop-concepts.md** | Software engineering: encapsulation, inheritance, polymorphism, **static members and utility-style design**. Tied to OrderBookEntry, MerkelMain, CSVReader. |
+| **orderbook-matching.md** | How order book matching works (bids vs asks, bid ≥ ask); using the CSV data and OrderBook / getOrders / matchOrders. |
 | **orderbook-worksheet.md** | Teaching steps from 2313_v3.pdf: class definition, constructor, vector of objects, range-for, const ref, challenge (computeAveragePrice etc.). Ties worksheet to OrderBookEntry.h and OrderBookEntry.cpp. |
 | **organizing-code.md** | Organizing code: header = spec, .cpp = impl, namespacing, include guards, limiting exposure (private orders_), embedding init. Tied to MerkelMain. |
 | **ORDERBOOK.md** | Domain: order book, bids/asks, matching engine, CSV format. |

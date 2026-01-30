@@ -126,6 +126,7 @@ The next step is to **model this in code** using object-oriented techniques: e.g
 
 ## Related docs
 
+- [orderbook-matching.md](orderbook-matching.md) — How matching works (bid ≥ ask), step-by-step; using the data and OrderBook / getOrders / matchOrders.
 - [SETUP.md](SETUP.md) — Project setup and running the app.
 - [ClassesandData.md](ClassesandData.md) — Data types and classes.
 - [DESIGN.md](DESIGN.md) — OOP and system boundaries (principal/PM).
