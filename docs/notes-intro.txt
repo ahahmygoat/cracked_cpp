@@ -1,0 +1,22 @@
+How to store different types of data in main memory
+How to manipulate and perform operations on that data including performing arithmetic on numbers
+How to take our first steps towards helping our programs make decisions
+How we can write our programs to communicate with the users - including getting input from user and showing them output
+
+std::endl use as is cross platfrom
+g++ --std=c++11 test.cpp
+adding the specifier makes it possible to use certain stuff that is above 
+c++11 so unloick at least those standards of features
+
+int main(){
+
+    std::cout << "Type in a number" << x << std::endl;
+
+    int x;
+    std::cin >> x;
+    std::cout << "You typed: " << x << std::endl;
+
+    exception handling
+    boolean 
+    To make it more robust
+}

@@ -94,3 +94,10 @@ git add .
 git commit -m "Describe what you did"
 git push
 ```
+
+---
+
+## Related docs
+
+- [SETUP.md](SETUP.md) — Build, run, compilers, troubleshooting.
+- [INDEX.md](INDEX.md) — Doc map and learning path.

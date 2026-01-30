@@ -5,6 +5,8 @@ a.out
 a.exe
 main
 main.exe
+OrderBookEntry.exe
+MerkelMain.exe
 *.o
 *.obj
 *.so
@@ -12,6 +14,10 @@ main.exe
 *.dll
 *.a
 *.lib
+*.pdb
+*.ilk
+*.exp
+*.pch
 
 # IDE / Editor
 .vscode/*
@@ -21,6 +27,18 @@ main.exe
 *.swp
 *.swo
 *~
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio / MSVC
+.vs/
+x64/
+Debug/
+Release/
+[Dd]ebug/
+[Rr]elease/
 
 # OS
 .DS_Store

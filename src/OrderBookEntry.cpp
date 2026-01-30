@@ -1,0 +1,129 @@
+/*
+ * OrderBookEntry.cpp — definitions for order book entry, print helpers, and stats.
+ *
+ * PURPOSE: Implements everything declared in OrderBookEntry.h. One translation unit holds
+ * the single definition of the global orders vector, OrderBookEntry member functions,
+ * printOrderBook*, and compute* functions, plus main() for the demo.
+ * CSV loading is in CSVReader (CSVReader.cpp); see CSVReader.h.
+ *
+ * PROJECT LAYOUT: Source in src/. Build from repo root with -Isrc. See docs/project-layout.md.
+ *
+ * WORKSHEET: Follows docs/2313_v3.pdf (Modelling an order book entry as a class).
+ * See docs/orderbook-worksheet.md for teaching steps; docs/headers-and-cpp.md for .h/.cpp split;
+ * docs/oop-concepts.md for encapsulation, inheritance, polymorphism.
+ *
+ * CSV columns (order in file): timestamp, product, orderType, amount, price.
+ * Constructor parameter order: (price, amount, timestamp, product, orderType).
+ */
+
+#include "OrderBookEntry.h"
+#include "CSVReader.h"
+#include <algorithm> /* std::min for printOrderBookByIndex */
+#include <utility>   /* std::move for constructor (efficiency) */
+
+// -------- Global vector: single definition (declared extern in .h) --------
+std::vector<OrderBookEntry> orders;
+
+// -------- OrderBookEntry: constructor and print (declared in .h) --------
+OrderBookEntry::OrderBookEntry(double price, double amount, std::string timestamp,
+                               std::string product, OrderBookType orderType)
+    : price(price), amount(amount), timestamp(std::move(timestamp)),
+      product(std::move(product)), orderType(orderType) {}
+
+void OrderBookEntry::print() const {
+    std::cout << "Order: " << Format::price(amount) << " " << product
+              << " at " << Format::price(price) << " on " << timestamp
+              << " " << orderBookTypeToString(orderType) << std::endl;
+}
+
+// -------- Print first N entries: three styles (see docs/vector-iteration.md) --------
+void printOrderBookByIndex(const std::vector<OrderBookEntry>& entries, int maxRows) {
+    const size_t end = std::min(entries.size(), static_cast<size_t>(maxRows));
+    for (size_t i = 0; i < end; ++i) {
+        entries[i].print();
+    }
+}
+
+void printOrderBookByIterator(const std::vector<OrderBookEntry>& entries, int maxRows) {
+    int n = 0;
+    for (auto it = entries.begin(); it != entries.end() && n < maxRows; ++it, ++n) {
+        it->print();
+    }
+}
+
+void printOrderBookByRange(const std::vector<OrderBookEntry>& entries, int maxRows) {
+    int n = 0;
+    for (const auto& entry : entries) {
+        if (n >= maxRows) break;
+        entry.print();
+        ++n;
+    }
+}
+
+void printOrderBook(const std::vector<OrderBookEntry>& entries, int maxRows) {
+    printOrderBookByRange(entries, maxRows);
+}
+
+// -------- Worksheet challenge: compute stats over entries --------
+double computeAveragePrice(const std::vector<OrderBookEntry>& entries) {
+    if (entries.empty()) return 0.0;
+    double sum = 0.0;
+    for (const auto& e : entries) sum += e.price;
+    return sum / static_cast<double>(entries.size());
+}
+
+double computeLowPrice(const std::vector<OrderBookEntry>& entries) {
+    if (entries.empty()) return 0.0;
+    double low = entries[0].price;
+    for (const auto& e : entries)
+        if (e.price < low) low = e.price;
+    return low;
+}
+
+double computeHighPrice(const std::vector<OrderBookEntry>& entries) {
+    if (entries.empty()) return 0.0;
+    double high = entries[0].price;
+    for (const auto& e : entries)
+        if (e.price > high) high = e.price;
+    return high;
+}
+
+double computePriceSpread(const std::vector<OrderBookEntry>& entries) {
+    return computeHighPrice(entries) - computeLowPrice(entries);
+}
+
+// -------- Entry point for the order book demo (only when building standalone) --------
+// Build standalone: scripts/build-OrderBookEntry.ps1 (defines ORDERBOOK_STANDALONE)
+// MerkelMain build does not define it, so this main() is omitted and MerkelMain.cpp provides main.
+#ifdef ORDERBOOK_STANDALONE
+// Expects data/order_book_example.csv relative to the current working directory.
+int main() {
+    const char* path = "data/order_book_example.csv";
+    orders = CSVReader::readCSV(path);
+    int count = static_cast<int>(orders.size());
+    if (count == 0) {
+        std::cerr << "No orders loaded. Check path: " << path << std::endl;
+        return 1;
+    }
+
+    const int maxRows = 5;
+    std::cout << "Loaded " << count << " orders. Showing first " << maxRows << " (3 ways):" << std::endl;
+
+    Format::sectionHeader("1. Index-based (entries[i])");
+    printOrderBookByIndex(orders, maxRows);
+
+    Format::sectionHeader("2. Iterator-based (it->print())");
+    printOrderBookByIterator(orders, maxRows);
+
+    Format::sectionHeader("3. Range-based for (const auto& entry)");
+    printOrderBookByRange(orders, maxRows);
+
+    Format::sectionHeader("Stats (worksheet challenge)");
+    std::cout << "Average price: " << Format::price(computeAveragePrice(orders)) << std::endl;
+    std::cout << "Low price:     " << Format::price(computeLowPrice(orders)) << std::endl;
+    std::cout << "High price:    " << Format::price(computeHighPrice(orders)) << std::endl;
+    std::cout << "Price spread:  " << Format::price(computePriceSpread(orders)) << std::endl;
+
+    return 0;
+}
+#endif // ORDERBOOK_STANDALONE
